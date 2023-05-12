@@ -51,25 +51,25 @@ class TestNode(unittest.TestCase):
 
     def test_add_path_and_find_child(self):
         # Level 1 (root)
-        self.assertEqual(set(c.name for c in self.root.children), set('ah'))
+        self.assertEqual({c.name for c in self.root.children}, set('ah'))
 
         # Level 2
         node_a = self.root.find_child('a')
         node_h = self.root.find_child('h')
-        self.assertEqual(set(c.name for c in node_a.children), set('bd'))
-        self.assertEqual(set(c.name for c in node_h.children), set('in'))
+        self.assertEqual({c.name for c in node_a.children}, set('bd'))
+        self.assertEqual({c.name for c in node_h.children}, set('in'))
 
         # Level 3
         node_b = node_a.find_child('b')
         node_i = node_h.find_child('i')
-        self.assertEqual(set(c.name for c in node_b.children), set('cf'))
-        self.assertEqual(set(c.name for c in node_i.children), set('k'))
+        self.assertEqual({c.name for c in node_b.children}, set('cf'))
+        self.assertEqual({c.name for c in node_i.children}, set('k'))
 
         # Level 4
         node_c = node_b.find_child('c')
         node_k = node_i.find_child('k')
-        self.assertEqual(set(c.name for c in node_c.children), set())
-        self.assertEqual(set(c.name for c in node_k.children), set('lmp'))
+        self.assertEqual({c.name for c in node_c.children}, set())
+        self.assertEqual({c.name for c in node_k.children}, set('lmp'))
 
         # Return None if child can't be found
         self.assertFalse(node_c.find_child('x'))

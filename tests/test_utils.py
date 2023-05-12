@@ -2,7 +2,7 @@ from http_prompt import utils
 
 
 def test_colformat_zero_items():
-    assert list(utils.colformat([], terminal_width=80)) == []
+    assert not list(utils.colformat([], terminal_width=80))
 
 
 def test_colformat_one_item():

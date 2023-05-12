@@ -212,10 +212,7 @@ class ExecutionVisitor(NodeVisitor):
         self.last_response = None
 
         # Pygments formatter, used to render output with colors in some cases
-        if style:
-            self.formatter = TerminalFormatter(style=style)
-        else:
-            self.formatter = None
+        self.formatter = TerminalFormatter(style=style) if style else None
 
     @property
     def output(self):
@@ -241,7 +238,7 @@ class ExecutionVisitor(NodeVisitor):
 
         if isinstance(path, Node):
             seg = urlparse(self.context_override.url)
-            self.context_override.url = seg.scheme + '://' + seg.netloc
+            self.context_override.url = f'{seg.scheme}://{seg.netloc}'
         else:
             self.context_override.url = urljoin2(
                 self.context_override.url, path)
@@ -366,9 +363,7 @@ class ExecutionVisitor(NodeVisitor):
         return node
 
     def visit_mutkey(self, node, children):
-        if isinstance(children[0], list):
-            return children[0][1]
-        return children[0]
+        return children[0][1] if isinstance(children[0], list) else children[0]
 
     def _mutate(self, node, key, op, val):
         if op == ':=':
@@ -456,9 +451,7 @@ class ExecutionVisitor(NodeVisitor):
 
     def _visit_stringitem(self, node, children):
         child = children[0]
-        if hasattr(child, 'text'):
-            return child.text
-        return child
+        return child.text if hasattr(child, 'text') else child
 
     visit_unquoted_mutkey_item = _visit_stringitem
     visit_unquoted_stringitem = _visit_stringitem
@@ -541,9 +534,7 @@ class ExecutionVisitor(NodeVisitor):
 
     def generic_visit(self, node, children):
         if not node.expr_name and node.children:
-            if len(children) == 1:
-                return children[0]
-            return children
+            return children[0] if len(children) == 1 else children
         return node
 
 
@@ -553,7 +544,7 @@ def execute(command, context, listener=None, style=None):
     except ParseError as err:
         # TODO: Better error message
         part = command[err.pos:err.pos + 10]
-        click.secho('Syntax error near "%s"' % part, err=True, fg='red')
+        click.secho(f'Syntax error near "{part}"', err=True, fg='red')
     else:
         visitor = ExecutionVisitor(context, listener=listener, style=style)
         try:
@@ -564,9 +555,8 @@ def execute(command, context, listener=None, style=None):
                 # XXX: Need to parse VisitationError error message to get the
                 # original error message as VisitationError doesn't hold the
                 # original exception object
-                key = re.search(r"KeyError: u?'(.*)'", str(err)).group(1)
-                click.secho("Key '%s' not found" % key, err=True,
-                            fg='red')
+                key = re.search(r"KeyError: u?'(.*)'", str(err))[1]
+                click.secho(f"Key '{key}' not found", err=True, fg='red')
             elif issubclass(exc_class, OSError):
                 msg = str(err).splitlines()[0]
 

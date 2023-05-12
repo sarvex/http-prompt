@@ -14,20 +14,12 @@ def smart_quote(s):
 
 def unquote(s):
     quotes = ["'", '"']
-    quote_str = None
-    if s[0] in quotes:
-        quote_str = s[0]
-
-    if quote_str and s[-1] == quote_str:
-        return s[1: -1]
-    return s
+    quote_str = s[0] if s[0] in quotes else None
+    return s[1: -1] if quote_str and s[-1] == quote_str else s
 
 
 def unescape(s, exclude=None):
-    if exclude:
-        char = '[^%s]' % exclude
-    else:
-        char = '.'
+    char = f'[^{exclude}]' if exclude else '.'
     return re.sub(r'\\(%s)' % char, r'\1', s)
 
 
@@ -48,7 +40,7 @@ def colformat(strings, num_sep_spaces=1, terminal_width=None):
         return
 
     num_items = len(strings)
-    max_len = max([len(strip_ansi_escapes(s)) for s in strings])
+    max_len = max(len(strip_ansi_escapes(s)) for s in strings)
 
     num_columns = min(
         int((terminal_width + num_sep_spaces) / (max_len + num_sep_spaces)),

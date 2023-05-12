@@ -32,11 +32,11 @@ from .xdg import get_data_dir
 
 def fix_incomplete_url(url):
     if url.startswith(('s://', '://')):
-        url = 'http' + url
+        url = f'http{url}'
     elif url.startswith('//'):
-        url = 'http:' + url
+        url = f'http:{url}'
     elif not url.startswith(('http://', 'https://')):
-        url = 'http://' + url
+        url = f'http://{url}'
     return url
 
 
@@ -67,13 +67,13 @@ class ExecutionListener(object):
             existing_cookie = context.headers.get('Cookie')
             new_cookie = update_cookies(existing_cookie, response.cookies)
             context.headers['Cookie'] = new_cookie
-            click.secho('Cookies set: %s' % new_cookie)
+            click.secho(f'Cookies set: {new_cookie}')
 
 
 def normalize_url(ctx, param, value):
     if value:
         if not re.search(r'^\w+://', value):
-            value = 'file:' + pathname2url(os.path.abspath(value))
+            value = f'file:{pathname2url(os.path.abspath(value))}'
         return value
     return None
 
@@ -87,12 +87,11 @@ def normalize_url(ctx, param, value):
 @click.argument('http_options', nargs=-1, type=click.UNPROCESSED)
 @click.version_option(message='%(version)s')
 def cli(spec, env, url, http_options):
-    click.echo('Version: %s' % __version__)
+    click.echo(f'Version: {__version__}')
 
     copied, config_path = config.initialize()
     if copied:
-        click.echo('Config file not found. Initialized a new one: %s' %
-                   config_path)
+        click.echo(f'Config file not found. Initialized a new one: {config_path}')
 
     cfg = config.load()
 
@@ -110,8 +109,11 @@ def cli(spec, env, url, http_options):
                 try:
                     spec = yaml.safe_load(content)
                 except yaml.YAMLError:
-                    click.secho("Warning: Specification file '%s' is neither valid JSON nor YAML" %
-                                spec, err=True, fg='red')
+                    click.secho(
+                        f"Warning: Specification file '{spec}' is neither valid JSON nor YAML",
+                        err=True,
+                        fg='red',
+                    )
                     spec = None
         finally:
             f.close()
@@ -120,8 +122,7 @@ def cli(spec, env, url, http_options):
         url = fix_incomplete_url(url)
     context = Context(url, spec=spec)
 
-    output_style = cfg.get('output_style')
-    if output_style:
+    if output_style := cfg.get('output_style'):
         context.options['--style'] = output_style
 
     # For prompt-toolkit
@@ -153,10 +154,15 @@ def cli(spec, env, url, http_options):
 
     while True:
         try:
-            text = prompt('%s> ' % context.url, completer=completer,
-                          lexer=lexer, style=style, history=history,
-                          auto_suggest=AutoSuggestFromHistory(),
-                          vi_mode=cfg['vi'])
+            text = prompt(
+                f'{context.url}> ',
+                completer=completer,
+                lexer=lexer,
+                style=style,
+                history=history,
+                auto_suggest=AutoSuggestFromHistory(),
+                vi_mode=cfg['vi'],
+            )
         except KeyboardInterrupt:
             continue  # Control-C pressed
         except EOFError:

@@ -156,7 +156,7 @@ class TestExecution_env(ExecutionTestCase):
         with open(filename, 'w') as f:
             f.write('hello world\n')
 
-        execute('env > %s' % filename, self.context)
+        execute(f'env > {filename}', self.context)
 
         with open(filename) as f:
             content = f.read()
@@ -174,7 +174,7 @@ class TestExecution_env(ExecutionTestCase):
         filename_with_var = filename.replace("testenvvar", "${MYPRIVATEVAR}")
 
         os.environ['MYPRIVATEVAR'] = 'testenvvar'
-        execute('env > %s' % filename_with_var, self.context)
+        execute(f'env > {filename_with_var}', self.context)
         os.environ['MYPRIVATEVAR'] = ''
 
         with open(filename) as f:
@@ -196,7 +196,7 @@ class TestExecution_env(ExecutionTestCase):
             f.write('hello world\n')
 
         self.context.body_params['name'] = '許 功蓋'
-        execute('env > %s' % filename, self.context)
+        execute(f'env > {filename}', self.context)
 
         with open(filename, encoding='utf-8') as f:
             content = f.read()
@@ -216,7 +216,7 @@ class TestExecution_env(ExecutionTestCase):
         with open(filename, 'w') as f:
             f.write('hello world\n')
 
-        execute("env > '%s'" % filename, self.context)
+        execute(f"env > '{filename}'", self.context)
 
         with open(filename) as f:
             content = f.read()
@@ -236,7 +236,7 @@ class TestExecution_env(ExecutionTestCase):
         with open(filename, 'w') as f:
             f.write('hello world\n')
 
-        execute('env >> %s' % filename, self.context)
+        execute(f'env >> {filename}', self.context)
 
         with open(filename) as f:
             content = f.read()
@@ -281,7 +281,7 @@ class TestExecution_source_and_exec(ExecutionTestCase):
             "cd v2/user\n")
 
     def test_source(self):
-        execute('source %s' % self.filename, self.context)
+        execute(f'source {self.filename}', self.context)
 
         self.assertEqual(self.context.url,
                          'http://localhost:8000/api/v2/user')
@@ -303,7 +303,7 @@ class TestExecution_source_and_exec(ExecutionTestCase):
         })
 
     def test_source_with_spaces(self):
-        execute(' source       %s   ' % self.filename, self.context)
+        execute(f' source       {self.filename}   ', self.context)
 
         self.assertEqual(self.context.url,
                          'http://localhost:8000/api/v2/user')
@@ -342,7 +342,7 @@ class TestExecution_source_and_exec(ExecutionTestCase):
         self.assert_stderr(err_msg)
 
     def test_source_quoted_filename(self):
-        execute('source "%s"' % self.filename, self.context)
+        execute(f'source "{self.filename}"', self.context)
 
         self.assertEqual(self.context.url,
                          'http://localhost:8000/api/v2/user')
@@ -366,12 +366,12 @@ class TestExecution_source_and_exec(ExecutionTestCase):
     @pytest.mark.skipif(sys.platform == 'win32',
                         reason="Windows doesn't use backslashes to escape")
     def test_source_escaped_filename(self):
-        new_filename = self.filename + r' copy'
+        new_filename = f'{self.filename} copy'
         shutil.copyfile(self.filename, new_filename)
 
         new_filename = new_filename.replace(' ', r'\ ')
 
-        execute('source %s' % new_filename, self.context)
+        execute(f'source {new_filename}', self.context)
 
         self.assertEqual(self.context.url,
                          'http://localhost:8000/api/v2/user')
@@ -393,7 +393,7 @@ class TestExecution_source_and_exec(ExecutionTestCase):
         })
 
     def test_exec(self):
-        execute('exec %s' % self.filename, self.context)
+        execute(f'exec {self.filename}', self.context)
 
         self.assertEqual(self.context.url,
                          'http://localhost:8000/api/v2/user')
@@ -410,7 +410,7 @@ class TestExecution_source_and_exec(ExecutionTestCase):
         })
 
     def test_exec_with_spaces(self):
-        execute('  exec    %s   ' % self.filename, self.context)
+        execute(f'  exec    {self.filename}   ', self.context)
 
         self.assertEqual(self.context.url,
                          'http://localhost:8000/api/v2/user')
@@ -443,7 +443,7 @@ class TestExecution_source_and_exec(ExecutionTestCase):
         self.assert_stderr(err_msg)
 
     def test_exec_quoted_filename(self):
-        execute("exec '%s'" % self.filename, self.context)
+        execute(f"exec '{self.filename}'", self.context)
 
         self.assertEqual(self.context.url,
                          'http://localhost:8000/api/v2/user')
@@ -462,12 +462,12 @@ class TestExecution_source_and_exec(ExecutionTestCase):
     @pytest.mark.skipif(sys.platform == 'win32',
                         reason="Windows doesn't use backslashes to escape")
     def test_exec_escaped_filename(self):
-        new_filename = self.filename + r' copy'
+        new_filename = f'{self.filename} copy'
         shutil.copyfile(self.filename, new_filename)
 
         new_filename = new_filename.replace(' ', r'\ ')
 
-        execute('exec %s' % new_filename, self.context)
+        execute(f'exec {new_filename}', self.context)
         self.assertEqual(self.context.url,
                          'http://localhost:8000/api/v2/user')
         self.assertEqual(self.context.headers, {
@@ -507,7 +507,7 @@ class TestExecution_env_and_source(ExecutionTestCase):
         c2 = c.copy()
 
         filename = self.make_tempfile()
-        execute('env > %s' % filename, c)
+        execute(f'env > {filename}', c)
         execute('rm *', c)
 
         self.assertFalse(c.headers)
@@ -515,7 +515,7 @@ class TestExecution_env_and_source(ExecutionTestCase):
         self.assertFalse(c.body_params)
         self.assertFalse(c.options)
 
-        execute('source %s' % filename, c)
+        execute(f'source {filename}', c)
 
         self.assertEqual(c, c2)
 
@@ -541,7 +541,7 @@ class TestExecution_env_and_source(ExecutionTestCase):
         c2 = c.copy()
 
         filename = self.make_tempfile()
-        execute('env > %s' % filename, c)
+        execute(f'env > {filename}', c)
         execute('rm *', c)
 
         self.assertFalse(c.headers)
@@ -549,7 +549,7 @@ class TestExecution_env_and_source(ExecutionTestCase):
         self.assertFalse(c.body_params)
         self.assertFalse(c.options)
 
-        execute('source %s' % filename, c)
+        execute(f'source {filename}', c)
 
         self.assertEqual(c, c2)
 
@@ -790,7 +790,7 @@ class TestExecution_ls(ExecutionTestCase):
         with open(filename, 'w') as f:
             f.write('hello world\n')
 
-        execute('ls > %s' % filename, self.context)
+        execute(f'ls > {filename}', self.context)
 
         with open(filename) as f:
             content = f.read()
@@ -803,7 +803,7 @@ class TestExecution_ls(ExecutionTestCase):
         with open(filename, 'w') as f:
             f.write('hello world\n')
 
-        execute('ls >> %s' % filename, self.context)
+        execute(f'ls >> {filename}', self.context)
 
         with open(filename) as f:
             content = f.read()
@@ -1228,8 +1228,8 @@ class TestHttpBin(TempAppDirTestCase):
     def setUp(self):
         super(TestHttpBin, self).setUp()
 
-        # XXX: pytest doesn't allow HTTPie to read stdin while it's capturing
-        # stdout, so we replace stdin with a file temporarily during the test.
+
+
         class MockStdin(object):
             def __init__(self, fp):
                 self.fp = fp
@@ -1238,9 +1238,8 @@ class TestHttpBin(TempAppDirTestCase):
                 return True
 
             def __getattr__(self, name):
-                if name == 'isatty':
-                    return self.isatty
-                return getattr(self.fp, name)
+                return self.isatty if name == 'isatty' else getattr(self.fp, name)
+
 
         self.orig_stdin = sys.stdin
         filename = self.make_tempfile()
@@ -1265,7 +1264,7 @@ class TestHttpBin(TempAppDirTestCase):
     def execute_redirection(self, command):
         context = Context('http://httpbin.org')
         filename = self.make_tempfile()
-        execute('%s > %s' % (command, filename), context)
+        execute(f'{command} > {filename}', context)
 
         with open(filename, 'rb') as f:
             return f.read()
@@ -1310,7 +1309,7 @@ class TestHttpBin(TempAppDirTestCase):
     @pytest.mark.skipif(sys.platform == 'win32', reason="Unix only")
     def test_get_and_tee(self):
         filename = self.make_tempfile()
-        self.execute_pipe('get /get hello==world | tee %s' % filename)
+        self.execute_pipe(f'get /get hello==world | tee {filename}')
 
         with open(filename) as f:
             data = json.load(f)
@@ -1542,7 +1541,7 @@ class TestCommandPreviewRedirection(ExecutionTestCase):
         with open(filename, 'w') as f:
             f.write('hello world\n')
 
-        execute('httpie > %s' % filename, self.context)
+        execute(f'httpie > {filename}', self.context)
 
         with open(filename) as f:
             content = f.read()
@@ -1555,7 +1554,7 @@ class TestCommandPreviewRedirection(ExecutionTestCase):
         with open(filename, 'w') as f:
             f.write('hello world\n')
 
-        execute('httpie > "%s"' % filename, self.context)
+        execute(f'httpie > "{filename}"', self.context)
 
         with open(filename) as f:
             content = f.read()
@@ -1584,8 +1583,7 @@ class TestCommandPreviewRedirection(ExecutionTestCase):
         with open(filename, 'w') as f:
             f.write('hello world\n')
 
-        execute('httpie post http://example.org name=john > %s' % filename,
-                self.context)
+        execute(f'httpie post http://example.org name=john > {filename}', self.context)
 
         with open(filename) as f:
             content = f.read()
@@ -1598,7 +1596,7 @@ class TestCommandPreviewRedirection(ExecutionTestCase):
         with open(filename, 'w') as f:
             f.write('hello world\n')
 
-        execute('httpie >> %s' % filename, self.context)
+        execute(f'httpie >> {filename}', self.context)
 
         with open(filename) as f:
             content = f.read()
@@ -1611,7 +1609,7 @@ class TestCommandPreviewRedirection(ExecutionTestCase):
         with open(filename, 'w') as f:
             f.write('hello world\n')
 
-        execute('httpie>>%s' % filename, self.context)
+        execute(f'httpie>>{filename}', self.context)
 
         with open(filename) as f:
             content = f.read()
@@ -1624,7 +1622,7 @@ class TestCommandPreviewRedirection(ExecutionTestCase):
         with open(filename, 'w') as f:
             f.write('hello world\n')
 
-        execute("httpie >> '%s'" % filename, self.context)
+        execute(f"httpie >> '{filename}'", self.context)
 
         with open(filename) as f:
             content = f.read()

@@ -18,9 +18,9 @@ class Context(object):
             if not self.url:
                 schemes = spec.get('schemes')
                 scheme = schemes[0] if schemes else 'https'
-                self.url = (scheme + '://' +
-                            spec.get('host', 'http://localhost:8000') +
-                            spec.get('basePath', ''))
+                self.url = (
+                    f'{scheme}://' + spec.get('host', 'http://localhost:8000')
+                ) + spec.get('basePath', '')
 
             base_path_tokens = list(filter(lambda s: s,
                                     spec.get('basePath', '').split('/')))
@@ -32,7 +32,7 @@ class Context(object):
                     if path == '/':  # Path is a trailing slash
                         path_tokens.insert(len(base_path_tokens), '/')
                     elif path[-1] == '/':  # Path ends with a trailing slash
-                        path_tokens[-1] = path_tokens[-1] + '/'
+                        path_tokens[-1] = f'{path_tokens[-1]}/'
                     self.root.add_path(*path_tokens)
                     endpoint = dict(paths[path])
                     # path parameters (apply to all paths if not overriden)
@@ -52,6 +52,7 @@ class Context(object):
                                 i.get('name', None),
                                 i.get('in', None)
                             )
+
                             # parameter is overriden based on $ref/in/name value
                             # last value (local definition) takes precedence
                             params_map = {parameter_key(p): p for p in params}
@@ -59,8 +60,11 @@ class Context(object):
                             for param in params:
                                 if param.get('$ref'):
                                     for section in param.get('$ref').split('/'):
-                                        param = param.get(
-                                            section) if not section == '#' else spec
+                                        param = (
+                                            param.get(section)
+                                            if section != '#'
+                                            else spec
+                                        )
 
                                 if param.get('in') != 'path':
                                     # Note that for completion mechanism, only

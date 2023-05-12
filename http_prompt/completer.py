@@ -53,8 +53,7 @@ def fuzzyfinder(text, collection):
     pat = '.*?'.join(map(re.escape, text))
     regex = re.compile(pat, flags=re.IGNORECASE)
     for item in collection:
-        r = regex.search(item)
-        if r:
+        if r := regex.search(item):
             suggestions.append((len(r.group()), r.start(), item))
 
     return (z for _, _, z in sorted(suggestions))
@@ -79,8 +78,7 @@ class CompletionGenerator(object):
 
     def header_values(self, context, match):
         header_name = match.group(1)
-        header_values = HEADER_VALUES.get(header_name)
-        if header_values:
+        if header_values := HEADER_VALUES.get(header_name):
             for value in header_values:
                 yield value, header_name
 
@@ -126,8 +124,7 @@ class CompletionGenerator(object):
 
     def urlpaths(self, context, match):
         path = urlparse(context.url).path.split('/')
-        overrided_path = match.group(2)
-        if overrided_path:
+        if overrided_path := match.group(2):
             if overrided_path.startswith('/'):
                 # Absolute path
                 path = []
@@ -140,10 +137,7 @@ class CompletionGenerator(object):
 
     def _generic_generate(self, names, values, descs):
         for name in sorted(names):
-            if isinstance(descs, str):
-                desc = descs
-            else:
-                desc = descs.get(name, '')
+            desc = descs if isinstance(descs, str) else descs.get(name, '')
             if name in values:
                 value = values[name]
                 if value is None:
@@ -151,8 +145,8 @@ class CompletionGenerator(object):
                 else:
                     value = str(value)
                     if len(value) > 16:
-                        value = value[:13] + '...'
-                    desc += ' (=%s)' % value
+                        value = f'{value[:13]}...'
+                    desc += f' (={value})'
             yield name, desc
 
 
@@ -168,8 +162,7 @@ class HttpPromptCompleter(Completer):
         word_dict = None
 
         for regex, method_name in RULES:
-            match = regex.search(cur_text)
-            if match:
+            if match := regex.search(cur_text):
                 gen_completions = getattr(self.comp_gen, method_name)
                 completions = gen_completions(self.context, match)
                 word_dict = OrderedDict(completions)
@@ -183,5 +176,4 @@ class HttpPromptCompleter(Completer):
                 break
 
         if word_dict:
-            for comp in match_completions(cur_word, word_dict):
-                yield comp
+            yield from match_completions(cur_word, word_dict)

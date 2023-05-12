@@ -16,14 +16,12 @@ class Node(object):
         return self.name
 
     def __repr__(self):
-        return "Node('{}', '{}')".format(self.name, self.data.get('type'))
+        return f"Node('{self.name}', '{self.data.get('type')}')"
 
     def __lt__(self, other):
         ta = self.data.get('type')
         tb = other.data.get('type')
-        if ta != tb:
-            return ta < tb
-        return self.name < other.name
+        return ta < tb if ta != tb else self.name < other.name
 
     def __eq__(self, other):
         return self.name == other.name and self.data == other.data
@@ -66,13 +64,10 @@ class Node(object):
             elif name == '..':
                 if cur.parent:
                     cur = cur.parent
+            elif child := cur.find_child(name):
+                cur = child
             else:
-                child = cur.find_child(name)
-                if child:
-                    cur = child
-                else:
-                    success = False
-                    break
+                success = False
+                break
         if success:
-            for node in sorted(cur.children):
-                yield node
+            yield from sorted(cur.children)

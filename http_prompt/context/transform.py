@@ -11,13 +11,11 @@ def _noop(s):
 
 def _extract_httpie_options(context, quote=False, join_key_value=False,
                             excluded_keys=None):
-    if quote:
-        quote_func = smart_quote
-    else:
-        quote_func = _noop
-
+    quote_func = smart_quote if quote else _noop
     if join_key_value:
-        def form_new_opts(k, v): return [k + '=' + v]
+        def form_new_opts(k, v):
+            return [f'{k}={v}']
+
     else:
         def form_new_opts(k, v): return [k, v]
 
@@ -36,11 +34,7 @@ def _extract_httpie_options(context, quote=False, join_key_value=False,
 
 
 def _extract_httpie_request_items(context, quote=False):
-    if quote:
-        quote_func = smart_quote
-    else:
-        quote_func = _noop
-
+    quote_func = smart_quote if quote else _noop
     items = []
     operators_and_items = [
         # (separator, dict_of_request_items)
@@ -54,14 +48,14 @@ def _extract_httpie_request_items(context, quote=False):
             if sep == ':=':
                 json_str = json.dumps(value,
                                       sort_keys=True)
-                item = '%s:=%s' % (k, quote_func(json_str))
+                item = f'{k}:={quote_func(json_str)}'
                 items.append(item)
             elif isinstance(value, (list, tuple)):
                 for v in value:
-                    item = quote_func('%s%s%s' % (k, sep, v))
+                    item = quote_func(f'{k}{sep}{v}')
                     items.append(item)
             else:
-                item = quote_func('%s%s%s' % (k, sep, value))
+                item = quote_func(f'{k}{sep}{value}')
                 items.append(item)
     return items
 
@@ -105,6 +99,6 @@ def format_to_http_prompt(context, excluded_options=None):
     """Format a Context object to HTTP Prompt commands."""
     cmds = _extract_httpie_options(context, quote=True, join_key_value=True,
                                    excluded_keys=excluded_options)
-    cmds.append('cd ' + smart_quote(context.url))
+    cmds.append(f'cd {smart_quote(context.url)}')
     cmds += _extract_httpie_request_items(context, quote=True)
     return '\n'.join(cmds) + '\n'

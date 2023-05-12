@@ -161,8 +161,7 @@ class TestCli(TempAppDirTestCase):
                                         spec_filepath])
         self.assertEqual(result.exit_code, 0)
         self.assertEqual(context.url, 'http://example.com')
-        self.assertEqual(set([n.name for n in context.root.children]),
-                         set(['users', 'orgs']))
+        self.assertEqual({n.name for n in context.root.children}, {'users', 'orgs'})
 
     def test_spec_basePath(self):
         spec_filepath = self.make_tempfile(json.dumps({
@@ -177,13 +176,13 @@ class TestCli(TempAppDirTestCase):
         self.assertEqual(result.exit_code, 0)
         self.assertEqual(context.url, 'http://example.com')
 
-        lv1_names = set([node.name for node in context.root.ls()])
-        lv2_names = set([node.name for node in context.root.ls('api')])
-        lv3_names = set([node.name for node in context.root.ls('api', 'v1')])
+        lv1_names = {node.name for node in context.root.ls()}
+        lv2_names = {node.name for node in context.root.ls('api')}
+        lv3_names = {node.name for node in context.root.ls('api', 'v1')}
 
-        self.assertEqual(lv1_names, set(['api']))
-        self.assertEqual(lv2_names, set(['v1']))
-        self.assertEqual(lv3_names, set(['users', 'orgs']))
+        self.assertEqual(lv1_names, {'api'})
+        self.assertEqual(lv2_names, {'v1'})
+        self.assertEqual(lv3_names, {'users', 'orgs'})
 
     def test_spec_from_http(self):
         spec_url = 'https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json'
@@ -192,7 +191,7 @@ class TestCli(TempAppDirTestCase):
         self.assertEqual(result.exit_code, 0)
         self.assertEqual(context.url, 'https://api.github.com')
 
-        top_level_paths = set([n.name for n in context.root.children])
+        top_level_paths = {n.name for n in context.root.children}
         self.assertIn('repos', top_level_paths)
         self.assertIn('users', top_level_paths)
 
@@ -203,11 +202,11 @@ class TestCli(TempAppDirTestCase):
         self.assertEqual(result.exit_code, 0)
         self.assertEqual(context.url, 'https://api.medium.com/v1')
 
-        lv1_names = set([node.name for node in context.root.ls()])
-        lv2_names = set([node.name for node in context.root.ls('v1')])
+        lv1_names = {node.name for node in context.root.ls()}
+        lv2_names = {node.name for node in context.root.ls('v1')}
 
-        self.assertEqual(lv1_names, set(['v1']))
-        self.assertEqual(lv2_names, set(['me', 'publications', 'users']))
+        self.assertEqual(lv1_names, {'v1'})
+        self.assertEqual(lv2_names, {'me', 'publications', 'users'})
 
     def test_spec_with_trailing_slash(self):
         spec_filepath = self.make_tempfile(json.dumps({
@@ -221,10 +220,10 @@ class TestCli(TempAppDirTestCase):
                                         spec_filepath])
         self.assertEqual(result.exit_code, 0)
         self.assertEqual(context.url, 'http://example.com')
-        lv1_names = set([node.name for node in context.root.ls()])
-        lv2_names = set([node.name for node in context.root.ls('api')])
-        self.assertEqual(lv1_names, set(['api']))
-        self.assertEqual(lv2_names, set(['/', 'users/']))
+        lv1_names = {node.name for node in context.root.ls()}
+        lv2_names = {node.name for node in context.root.ls('api')}
+        self.assertEqual(lv1_names, {'api'})
+        self.assertEqual(lv2_names, {'/', 'users/'})
 
     def test_env_only(self):
         env_filepath = self.make_tempfile(
